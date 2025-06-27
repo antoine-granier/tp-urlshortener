@@ -29,16 +29,22 @@ func NewClickRepository(db *gorm.DB) *GormClickRepository {
 // CreateClick insère un nouvel enregistrement de clic dans la base de données.
 // Elle reçoit un pointeur vers une structure models.Click et la persiste en utilisant GORM.
 func (r *GormClickRepository) CreateClick(click *models.Click) error {
-	// TODO : Use GORM to create a new record in the 'clicks' table.
-
+	if err := r.db.Create(click).Error; err != nil {
+		return fmt.Errorf("failed to create click record: %w", err)
+	}
+	return nil
 }
 
 // CountClicksByLinkID compte le nombre total de clics pour un ID de lien donné.
 // Cette méthode est utilisée pour fournir des statistiques pour une URL courte.
 func (r *GormClickRepository) CountClicksByLinkID(linkID uint) (int, error) {
 	var count int64 // GORM retourne un int64 pour les décomptes
-	// TODO : Utiliser GORM pour compter les enregistrements dans la table 'clicks'
-	// où 'LinkID' correspond à l'ID de lien fourni.
-	
+	if err := r.db.
+		Model(&models.Click{}).
+		Where("link_id = ?", linkID).
+		Count(&count).
+		Error; err != nil {
+		return 0, fmt.Errorf("failed to count clicks for link %d: %w", linkID, err)
+	}
 	return int(count), nil // Convert the int64 count to an int
 }
