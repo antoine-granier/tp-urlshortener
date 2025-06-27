@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/axellelanca/urlshortener/internal/services"
+	"github.com/antoine-granier/urlshortener/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"gorm.io/gorm" // Pour gérer gorm.ErrRecordNotFound
