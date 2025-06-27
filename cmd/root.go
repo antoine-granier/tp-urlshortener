@@ -2,11 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/antoine-granier/urlshortener/internal/config"
+	"github.com/spf13/cobra"
 	"log"
 	"os"
-
-	"github.com/axellelanca/urlshortener/internal/config"
-	"github.com/spf13/cobra"
 )
 
 // cfg est la variable globale qui contiendra la configuration chargée.
@@ -14,6 +13,16 @@ import (
 var Cfg *config.Config
 
 // TODO : Créer la RootCmd avec Cobra
+var RootCmd = &cobra.Command{
+	Use:   "url-shortener",
+	Short: "Un service de raccourcissement d'URLs avec API REST et CLI",
+	Long: `'url-shortener' est une application complète pour gérer des URLs courtes.
+	Elle inclut un serveur API pour le raccourcissement et la redirection,
+	ainsi qu'une interface en ligne de commande pour l'administration.
+	
+	Utilisez 'url-shortener [command] --help' pour plus d'informations sur une commande.`,
+}
+
 // Utiliser ces descriptions :
 // "Un service de raccourcissement d'URLs avec API REST et CLI"
 // `
@@ -40,7 +49,7 @@ func Execute() {
 // et ajouter toutes les sous-commandes.
 func init() {
 	// TODO Initialiser la configuration globale avec OnInitialize
-
+	cobra.OnInitialize(initConfig)
 	// IMPORTANT : Ici, nous n'appelons PAS RootCmd.AddCommand() directement
 	// pour les commandes 'server', 'create', 'stats', 'migrate'.
 	// Ces commandes s'enregistreront elles-mêmes via leur propre fonction init().
