@@ -134,7 +134,7 @@ func GetLinkStatsHandler(linkService *services.LinkService) gin.HandlerFunc {
 		shortCode := c.Param("shortCode")
 
 		// TODO 6: Appeler le LinkService pour obtenir le lien et le nombre total de clics.
-		link, err := linkService.GetLinkByShortCode(shortCode)
+		link, count, err := linkService.GetLinkStats(shortCode)
 		if err != nil {
 			// Gérer le cas où le lien n'est pas trouvé (Gorm ErrRecordNotFound)
 			if err == gorm.ErrRecordNotFound {
@@ -149,6 +149,9 @@ func GetLinkStatsHandler(linkService *services.LinkService) gin.HandlerFunc {
 		// Gérer d'autres erreurs
 
 		// Retourne les statistiques dans la réponse JSON.
-		c.JSON(http.StatusOK, link)
+		c.JSON(http.StatusOK, gin.H{
+			"link":   link,
+			"clicks": count,
+		})
 	}
 }
