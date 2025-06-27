@@ -6,14 +6,15 @@ import (
 	"net/url" // Pour valider le format de l'URL
 	"os"
 
-	cmd2 "github.com/axellelanca/urlshortener/cmd"
-	"github.com/axellelanca/urlshortener/internal/repository"
-	"github.com/axellelanca/urlshortener/internal/services"
+	cmd2 "github.com/antoine-granier/urlshortener/cmd"
+	"github.com/antoine-granier/urlshortener/internal/repository"
+	"github.com/antoine-granier/urlshortener/internal/services"
 	"github.com/spf13/cobra"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
-//Faire une variable longURLFlag qui stockera la valeur du flag --url
+
+// Faire une variable longURLFlag qui stockera la valeur du flag --url
 var longURLFlag string
 
 // CreateCmd représente la commande 'create'
@@ -58,15 +59,15 @@ Exemple:
 		linkSvc := services.NewLinkService(linkRepo)
 
 		// Créer le lien court
-		link, err := linkSvc.CreateShortLink(longURLFlag)
+		link, err := linkSvc.CreateLink(longURLFlag)
 		if err != nil {
 			log.Fatalf("Erreur lors de la création du lien : %v", err)
 		}
 
 		// Afficher le résultat
-		fullShortURL := fmt.Sprintf("%s/%s", cfg.Server.BaseURL, link.Code)
+		fullShortURL := fmt.Sprintf("%s/%s", cfg.Server.BaseURL, link.ShortCode)
 		fmt.Println("URL courte créée avec succès:")
-		fmt.Printf("Code: %s\n", link.Code)
+		fmt.Printf("Code: %s\n", link.ShortCode)
 		fmt.Printf("URL complète: %s\n", fullShortURL)
 	},
 }

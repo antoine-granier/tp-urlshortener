@@ -5,16 +5,16 @@ import (
 	"log"
 	"os"
 
-	cmd2 "github.com/axellelanca/urlshortener/cmd"
-	"github.com/axellelanca/urlshortener/internal/repository"
-	"github.com/axellelanca/urlshortener/internal/services"
+	cmd2 "github.com/antoine-granier/urlshortener/cmd"
+	"github.com/antoine-granier/urlshortener/internal/repository"
+	"github.com/antoine-granier/urlshortener/internal/services"
 	"github.com/spf13/cobra"
 
 	"gorm.io/driver/sqlite" // Driver SQLite pour GORM
 	"gorm.io/gorm"
 )
 
-//variable shortCodeFlag qui stockera la valeur du flag --code
+// variable shortCodeFlag qui stockera la valeur du flag --code
 var shortCodeFlag string
 
 // StatsCmd représente la commande 'stats'
@@ -57,7 +57,7 @@ Exemple:
 		linkService := services.NewLinkService(linkRepo)
 
 		// Appeler GetLinkStats pour récupérer le lien et ses statistiques.
-		link, err := linkService.GetLinkByCode(shortCodeFlag)
+		link, err := linkService.GetLinkByShortCode(shortCodeFlag)
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {
 				fmt.Fprintf(os.Stderr, "Aucun lien trouvé pour le code '%s'\n", shortCodeFlag)
@@ -67,13 +67,13 @@ Exemple:
 		}
 
 		// Récupérer les statistiques
-		totalClicks, err := linkService.GetStats(shortCodeFlag)
+		_, totalClicks, err := linkService.GetLinkStats(shortCodeFlag)
 		if err != nil {
 			log.Fatalf("Erreur lors de la récupération des stats : %v", err)
 		}
 
 		// Afficher le résultat
-		fmt.Printf("Statistiques pour le code court: %s\n", link.Code)
+		fmt.Printf("Statistiques pour le code court: %s\n", link.ShortCode)
 		fmt.Printf("URL longue: %s\n", link.LongURL)
 		fmt.Printf("Total de clics: %d\n", totalClicks)
 	},

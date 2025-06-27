@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	cmd2 "github.com/axellelanca/urlshortener/cmd"
-	"github.com/axellelanca/urlshortener/internal/models"
+	cmd2 "github.com/antoine-granier/urlshortener/cmd"
+	"github.com/antoine-granier/urlshortener/internal/models"
 	"github.com/spf13/cobra"
 	"gorm.io/driver/sqlite" // Driver SQLite pour GORM
 	"gorm.io/gorm"
