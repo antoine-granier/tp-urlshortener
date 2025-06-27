@@ -62,7 +62,7 @@ puis lance le serveur HTTP.`,
 
 		// Initialiser le channel ClickEventsChannel et lancer les workers
 		bufferSize := cfg.Analytics.BufferSize
-		numWorkers := 3
+		numWorkers := 5
 		clickChan := make(chan models.ClickEvent, bufferSize)
 		workers.StartClickWorkers(numWorkers, clickChan, clickRepo)
 
@@ -79,7 +79,7 @@ puis lance le serveur HTTP.`,
 
 		// Configurer le routeur Gin et les handlers API
 		router := gin.Default()
-		api.SetupRoutes(router, linkSvc)
+		api.SetupRoutes(router, linkSvc, clickChan)
 		log.Println("Routes API configurées.")
 
 		// Créer le serveur HTTP Gin

@@ -18,23 +18,19 @@ import (
 // aux workers asynchrones. Il est bufferisé pour ne pas bloquer les requêtes de redirection.
 
 // SetupRoutes configure toutes les routes de l'API Gin et injecte les dépendances nécessaires
-func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
+func SetupRoutes(router *gin.Engine, linkService *services.LinkService, ClickEventsChannel chan models.ClickEvent) {
 	// Le channel est initialisé ici.
-	bufferSize := viper.GetInt("cfg.analytics.buffer_size")
-	// TODO Créer le channel ici (make), il doit être bufférisé
-	// La taille du buffer doit être configurable via Viper (cfg.Analytics.BufferSize)
-	ClickEventsChannel := make(chan models.ClickEvent, bufferSize)
-
+	bufferSize := viper.GetInt("analitics.bufferSize") // Récupère la taille du buffer depuis la configuration
 	if ClickEventsChannel == nil {
-		fmt.Println("Erreur : Le canal n'a pas pu être créé")
-		return
+		ClickEventsChannel = make(chan models.ClickEvent, bufferSize)
 	}
 
 	// router := gin.Default()
-	router.Use(GetLinkStatsHandler(linkService))
 
 	// TODO : Route de Health Check , /health
 	router.GET("/health", HealthCheckHandler)
+	// Route de Redirection (au niveau racine pour les short codes)
+	router.GET("/:shortCode", RedirectHandler(linkService, ClickEventsChannel))
 
 	api := router.Group("/api/v1")
 	{
@@ -46,8 +42,6 @@ func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 		// GET /links/:shortCode/stats
 		api.GET("/links/:shortCode/stats", GetLinkStatsHandler(linkService))
 
-		// Route de Redirection (au niveau racine pour les short codes)
-		api.GET("/:shortCode", RedirectHandler(linkService, ClickEventsChannel))
 	}
 }
 
@@ -92,6 +86,7 @@ func RedirectHandler(linkService *services.LinkService, ClickEventsChannel chan 
 		shortCode := c.Param("shortCode")
 
 		// TODO 2: Récupérer l'URL longue associée au shortCode depuis le linkService (GetLinkByShortCode)
+		fmt.Printf("Redirecting short code: %s\n", shortCode)
 		link, err := linkService.GetLinkByShortCode(shortCode)
 		if err != nil {
 			// Si le lien n'est pas trouvé, retourner HTTP 404 Not Found.
