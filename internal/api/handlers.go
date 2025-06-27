@@ -30,7 +30,7 @@ func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 	}
 
 	// router := gin.Default()
-	// router.Use(GetLinkStatsHandler(linkService))
+	router.Use(GetLinkStatsHandler(linkService))
 
 	// TODO : Route de Health Check , /health
 	router.GET("/health", HealthCheckHandler)
@@ -85,7 +85,7 @@ func RedirectHandler(linkService *services.LinkService) gin.HandlerFunc {
 		shortCode := c.Param("shortCode")
 
 		// TODO 2: Récupérer l'URL longue associée au shortCode depuis le linkService (GetLinkByShortCode)
-		link, err := services.GetLinkByShortCode(shortCode)
+		link, err := linkService.GetLinkByShortCode(shortCode)
 		if err != nil {
 			// Si le lien n'est pas trouvé, retourner HTTP 404 Not Found.
 			// Utiliser errors.Is et l'erreur Gorm
@@ -101,9 +101,12 @@ func RedirectHandler(linkService *services.LinkService) gin.HandlerFunc {
 		}
 
 		// TODO 3: Créer un ClickEvent avec les informations pertinentes.
-		clickEvent := ClickEvent{
-			clicked: 1,
-		}
+		// clickEvent := models.ClickEvent{
+		// 	LinkId:
+		// 	Timestamp:
+		// 	UserAgent:
+		// 	IPAddress:
+		// }
 
 		// TODO 4: Envoyer le ClickEvent dans le ClickEventsChannel avec le Multiplexage.
 		// Utilise un `select` avec un `default` pour éviter de bloquer si le channel est plein.
@@ -131,7 +134,7 @@ func GetLinkStatsHandler(linkService *services.LinkService) gin.HandlerFunc {
 		shortCode := c.Param("shortCode")
 
 		// TODO 6: Appeler le LinkService pour obtenir le lien et le nombre total de clics.
-		link, err := services.GetLinkByShortCode(shortCode)
+		link, err := linkService.GetLinkByShortCode(shortCode)
 		if err != nil {
 			// Gérer le cas où le lien n'est pas trouvé (Gorm ErrRecordNotFound)
 			if err == gorm.ErrRecordNotFound {
@@ -141,6 +144,7 @@ func GetLinkStatsHandler(linkService *services.LinkService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 			return
 		}
+
 		totalClicks, err := linkService.GetTotalClicks(shortCode)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve total clicks"})
@@ -151,10 +155,5 @@ func GetLinkStatsHandler(linkService *services.LinkService) gin.HandlerFunc {
 		// Gérer d'autres erreurs
 
 		// Retourne les statistiques dans la réponse JSON.
-		c.JSON(http.StatusOK, gin.H{
-			"short_code":   link.ShortCode,
-			"long_url":     link.LongURL,
-			"total_clicks": totalClicks,
-		})
 	}
 }
