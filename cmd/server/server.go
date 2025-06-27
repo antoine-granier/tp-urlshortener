@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/antoine-granier/urlshortener/internal/api"
-	"github.com/antoine-granier/urlshortener/internal/repository"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/antoine-granier/urlshortener/internal/api"
+	"github.com/antoine-granier/urlshortener/internal/repository"
 
 	cmd2 "github.com/antoine-granier/urlshortener/cmd"
 	"github.com/antoine-granier/urlshortener/internal/models"
@@ -51,20 +52,20 @@ puis lance le serveur HTTP.`,
 		}
 
 		// Initialiser les repositories
-		linkRepo := repository.NewLinkRepo(db)
-		clickRepo := repository.NewClickRepo(db)
+		linkRepo := repository.NewLinkRepository(db)
+		clickRepo := repository.NewClickRepository(db)
 		log.Println("Repositories initialisés.")
 
 		// Initialiser les services métiers
 		linkSvc := services.NewLinkService(linkRepo)
-		clickSvc := services.NewClickService(clickRepo)
 		log.Println("Services métiers initialisés.")
 
 		// Initialiser le channel ClickEventsChannel et lancer les workers
-		bufferSize := cfg.Workers.ClickBufferSize
-		numWorkers := cfg.Workers.NumClickWorkers
-		clickChan := make(chan uint, bufferSize)
-		workers.StartClickWorkers(clickChan, clickRepo, numWorkers)
+		bufferSize := cfg.Analytics.BufferSize
+		numWorkers := 3
+		clickChan := make(chan models.ClickEvent, bufferSize)
+		workers.StartClickWorkers(numWorkers, clickChan, clickRepo)
+
 		log.Printf(
 			"Channel d'événements de clic initialisé avec un buffer de %d. %d worker(s) de clics démarré(s).",
 			bufferSize, numWorkers,
@@ -78,7 +79,7 @@ puis lance le serveur HTTP.`,
 
 		// Configurer le routeur Gin et les handlers API
 		router := gin.Default()
-		api.RegisterRoutes(router, linkSvc, clickChan)
+		api.SetupRoutes(router, linkSvc)
 		log.Println("Routes API configurées.")
 
 		// Créer le serveur HTTP Gin
