@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/antoine-granier/urlshortener/internal/models"
 	"github.com/antoine-granier/urlshortener/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
@@ -15,17 +16,13 @@ import (
 // ClickEventsChannel est le channel global (ou injecté) utilisé pour envoyer les événements de clic
 // aux workers asynchrones. Il est bufferisé pour ne pas bloquer les requêtes de redirection.
 
-type ClickEvent struct {
-	clicked int
-}
-
 // SetupRoutes configure toutes les routes de l'API Gin et injecte les dépendances nécessaires
 func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 	// Le channel est initialisé ici.
 	bufferSize := viper.GetInt("cfg.analytics.buffer_size")
 	// TODO Créer le channel ici (make), il doit être bufférisé
 	// La taille du buffer doit être configurable via Viper (cfg.Analytics.BufferSize)
-	ClickEventsChannel := make(chan ClickEvent, bufferSize)
+	ClickEventsChannel := make(chan models.ClickEvent, bufferSize)
 
 	if ClickEventsChannel == nil {
 		fmt.Println("Erreur : Le canal n'a pas pu être créé")
