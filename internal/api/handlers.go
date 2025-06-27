@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -21,38 +22,42 @@ type ClickEvent struct {
 // SetupRoutes configure toutes les routes de l'API Gin et injecte les dépendances nécessaires
 func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 	// Le channel est initialisé ici.
+	bufferSize := viper.GetInt("cfg.analytics.buffer_size")
+	// TODO Créer le channel ici (make), il doit être bufférisé
+	// La taille du buffer doit être configurable via Viper (cfg.Analytics.BufferSize)
+	ClickEventsChannel := make(chan ClickEvent, bufferSize)
+
 	if ClickEventsChannel == nil {
-		// TODO Créer le channel ici (make), il doit être bufférisé
-		// La taille du buffer doit être configurable via Viper (cfg.Analytics.BufferSize)
-		bufferSize := viper.GetInt("cfg.analytics.buffer_size")
-		ClickEventsChannel := make(chan ClickEvent, bufferSize)
+		fmt.Println("Erreur : Le canal n'a pas pu être créé")
+		return
 	}
 
 	// router := gin.Default()
 	// router.Use(GetLinkStatsHandler(linkService))
 
 	// TODO : Route de Health Check , /health
-	router.GET("/health", HealthCheckHandler())
+	router.GET("/health", HealthCheckHandler)
 
 	api := router.Group("/api/v1")
 	{
 		// TODO : Routes de l'API
 		// Doivent être au format /api/v1/
 		// POST /links
-		router.POST("/links", func(c *gin.Context) {
+		api.POST("/links", func(c *gin.Context) {
 
 		})
 
 		// GET /links/:shortCode/stats
-		router.GET("/links/:shortCode/stats", GetLinkStatsHandler())
+		api.GET("/links/:shortCode/stats", GetLinkStatsHandler(linkService))
 
 		// Route de Redirection (au niveau racine pour les short codes)
-		router.GET("/:shortCode", RedirectHandler(linkService))
+		api.GET("/:shortCode", RedirectHandler(linkService))
 	}
 }
 
 // HealthCheckHandler gère la route /health pour vérifier l'état du service.
 func HealthCheckHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	return
 	// TODO  Retourner simplement du JSON avec un StatusOK, {"status": "ok"}
 }
@@ -73,11 +78,6 @@ func CreateShortLinkHandler(linkService *services.LinkService) gin.HandlerFunc {
 
 		// Retourne le code court et l'URL longue dans la réponse JSON.
 		// TODO Choisir le bon code HTTP
-		c.JSON(XXX, gin.H{
-			"short_code":     link.ShortCode,
-			"long_url":       link.LongURL,
-			"full_short_url": "http://localhost:8080/" + link.ShortCode, // TODO: Utiliser cfg.Server.BaseURL ici
-		})
 	}
 }
 
@@ -120,10 +120,10 @@ func RedirectHandler(linkService *services.LinkService) gin.HandlerFunc {
 			log.Printf("Warning: ClickEventsChannel is full, dropping click event for %s.", shortCode)
 		}
 
-		// log.Printf("Warning: ClickEventsChannel is full, dropping click event for %s.", shortCode)
+		//log.Printf("Warning: ClickEventsChannel is full, dropping click event for %s.", shortCode)
 
 		// TODO 5: Effectuer la redirection HTTP 302 (StatusFound) vers l'URL longue.
-
+		c.Redirect(http.StatusFound, link)
 	}
 }
 
