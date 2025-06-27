@@ -3,8 +3,8 @@ package workers
 import (
 	"log"
 
-	"github.com/axellelanca/urlshortener/internal/models"
-	"github.com/axellelanca/urlshortener/internal/repository" // Nécessaire pour interagir avec le ClickRepository
+	"github.com/antoine-granier/urlshortener/internal/models"
+	"github.com/antoine-granier/urlshortener/internal/repository" // Nécessaire pour interagir avec le ClickRepository
 )
 
 // StartClickWorkers lance un pool de goroutines "workers" pour traiter les événements de clic.
@@ -19,7 +19,7 @@ func StartClickWorkers(workerCount int, clickEventsChan <-chan models.ClickEvent
 // clickWorker est la fonction exécutée par chaque goroutine worker.
 // Elle tourne indéfiniment, lisant les événements de clic dès qu'ils sont disponibles dans le channel.
 func clickWorker(clickEventsChan <-chan models.ClickEvent, clickRepo repository.ClickRepository) {
-	for event := range clickEventsChan {// Boucle qui lit les événements du channel
+	for event := range clickEventsChan { // Boucle qui lit les événements du channel
 		// TODO 1: Convertir le 'ClickEvent' (reçu du channel) en un modèle 'models.Click'.
 		click := &models.Click{
 			LinkID: event.LinkID,
