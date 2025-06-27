@@ -40,8 +40,7 @@ func (r *GormLinkRepository) CreateLink(link *models.Link) error {
 func (r *GormLinkRepository) GetLinkByShortCode(shortCode string) (*models.Link, error) {
 	var link models.Link
 	if err := r.db.
-		Preload("Clicks").
-		First(&link, "code = ?", shortCode).
+		First(&link, "short_code = ?", shortCode).
 		Error; err != nil {
 		return nil, fmt.Errorf("failed to find link by code %s: %w", shortCode, err)
 	}
