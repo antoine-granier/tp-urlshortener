@@ -58,7 +58,6 @@ puis lance le serveur HTTP.`,
 		// Initialiser les services métiers
 		linkSvc := services.NewLinkService(linkRepo)
 		clickSvc := services.NewClickService(clickRepo)
-		_ = clickSvc // si non utilisé directement
 		log.Println("Services métiers initialisés.")
 
 		// Initialiser le channel ClickEventsChannel et lancer les workers
@@ -100,6 +99,7 @@ puis lance le serveur HTTP.`,
 		// Gère l'arrêt propre du serveur (graceful shutdown)
 		quit := make(chan os.Signal, 1)
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+		// Bloquer jusqu'à ce qu'un signal d'arrêt soit reçu
 		<-quit
 		log.Println("Signal d'arrêt reçu. Arrêt du serveur...")
 
